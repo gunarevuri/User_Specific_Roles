@@ -1,6 +1,15 @@
 {% extends 'app/base.html' %}
 {% block content %}
 	<h2>block content from home page</h2>
+	{% for student in students %}
+		{{student}}
+
+	{% endfor %}
+	<br/>
+	<br/>
+	{% for teacher in teachers %}
+		{{ teacher }}
+	{% endfor %}
 
 
 {% endblock %}

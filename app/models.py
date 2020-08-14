@@ -15,6 +15,7 @@ from django.contrib.auth.models import Group, Permission, GroupManager,Group
 from .validators import UnicodeUsernameValidator
 
 
+standard_list = [1,2,3,4,5,6,7,8,9,10]
 
 def update_last_login(sender, user, **kwargs):
 	"""
@@ -176,7 +177,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Student(models.Model):
 	" Student Model creation"
 	user = models.OneToOneField(User, on_delete = models.CASCADE)
-	standard = models.IntegerField(choices=[(x,x) for x in])
+	standard = models.IntegerField(choices=[(x,x) for x in standard_list])
 	address = models.CharField(max_length=500)
 	favourite_subject = models.CharField(max_length=100)
 

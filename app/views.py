@@ -16,6 +16,7 @@ from .decorators import unauthenticated_user, allowed_users, admin_only_decorato
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
+from django.core import serializers as core_serializer
 
 from .models import User, Student,Teacher
 from .serializers import StudentSerializer, TeacherSerializer, UserSerializer
@@ -46,6 +47,44 @@ def registration_view(request):
 	else:
 		context['form'] = form
 		return render(request, 'app/register.html', context)
+
+
+@login_required
+@api_view(["GET"])
+def home(request):
+
+	"""
+	Get all students and Teacher list separately
+	"""
+	context = {}
+
+	students = Student.objects.all()
+	students_json_list = core_serializer.serialize('json', list(students), fields = ("user.username", "user.email", "address", "standard", "favourite_subject"))
+	student_list = json.loads(students_json_list)
+	context["students"] = student_list
+
+	teachers = Teacher.objects.all()
+	teacher_json_list = core_serializer.serialize('json', list(teachers), fields=("user.username", "user.email", "address", "favourite_subject"))
+	teacher_list = json.loads(teacher_json_list)
+	context["teachers"] = teacher_list
+
+
+	return render(request, 'app/home.html', context )
+
+
+
+
+@login_required
+@admin_only_decoratory
+@api_view(["GET"])
+def Get_Users(request):
+	"""
+	list all users in the databse
+	"""
+	users = User.objects.all()
+	serializer = UserSerializer(users, many=True)
+	return Response(serializer.data)
+
 
 @login_required
 @api_view(["GET"])
@@ -176,7 +215,7 @@ def Student_detail(request,pk):
 		return Response(status=status.HTTP_204_NO_CONTENT)
 
 @login_required
-@allowed_users(allowed_roles=["admin"])
+@admin_only_decoratory
 @api_view(["GET", "PUT", "DELETE"])
 def Teacher_detail(request,pk):
 	"""
@@ -205,18 +244,6 @@ def Teacher_detail(request,pk):
 
 
 
-@login_required
-@allowed_users( allowed_roles  = ["admin", "teachers"])
-
-
-@login_required
-@allowed_users(allowed_roles =["teachers", "admin"])
-def Create_Student(request):
-
-
-
-
-
 
 @login_required
 @allowed_users(allowed_roles = ["admin","teachers"])
@@ -224,7 +251,3 @@ def get_teachers(request):
 		return render(request, 'app/teachers.html')
 
 
-
-@login_required
-def home(request):
-	return render(request, 'app/home.html')

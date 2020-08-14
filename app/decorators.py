@@ -2,10 +2,13 @@ from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 
-# Decorator function takes fun as arg or parameter add functionality before returning actual funcion
-# view_func login page here 
-# wrapper func executed first
+
 def unauthenticated_user(view_func):
+	"""
+	Decorator function takes fun as arg or parameter add functionality before returning actual funcion
+	view_func login page here 
+	wrapper func executed first
+	"""
 	def wrapper_func(request, *args, **kwargs):
 		if request.user.is_authenticated:
 			return redirect('home')
@@ -24,11 +27,7 @@ def allowed_users(allowed_roles = []):
 			print(request.user.groups.all())
 			l = list(request.user.groups.all())
 			if len(l)>0:
-				# li = request.user.groups.all()
-				# for i in li:
-				# 	print(i.name)
-				# group = request.user.groups.all()[0].name
-				# print(group)
+
 
 				if "students" in allowed_roles and request.user.groups.filter(name = "students"):
 					return view_func(request, *args, **kwargs)
@@ -66,6 +65,7 @@ def admin_only_decoratory(view_func):
 
 		if group == 'teachers':
 			return redirect('home')
+		return view_func(request, *args, **kwargs)
 
 	return wrapper_func
 
