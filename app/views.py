@@ -21,6 +21,7 @@ from django.core import serializers as core_serializer
 from .models import User, Student,Teacher
 from .serializers import StudentSerializer, TeacherSerializer, UserSerializer
 
+from rest_framework_jwt.utils import jwt_get_user_id_from_payload_handler
 
 # if you are already login you wont get access to this view
 @unauthenticated_user
@@ -277,6 +278,25 @@ def get_user_token(request):
 	return Response({"token": token,
 		 			"success":True,
 		 			})
+
+def get_user_id_from_payload(request):
+	return jwt_get_user_id_from_payload_handler(request.user)
+
+# if you want to decode the token and verify any custom claims
+def jwt_decode(token):
+    options = {
+        'verify_exp': api_settings.JWT_VERIFY_EXPIRATION,
+    }
+    # get user from token, BEFORE verification, to get user secret key
+    unverified_payload = jwt.decode(token, None, False)
+    secret_key = jwt_get_secret_key(unverified_payload)
+    return jwt.decode(
+        token,
+        api_settings.JWT_PUBLIC_KEY or secret_key,
+        api_settings.JWT_VERIFY,
+        issuer=api_settings.JWT_ISSUER,
+        algorithms=[api_settings.JWT_ALGORITHM]
+    )
 
 # @login_required
 # @allowed_users(allowed_roles = ["admin","teachers"])

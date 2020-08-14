@@ -53,13 +53,12 @@ urlpatterns = [
 
 
 	# JWT urls implementation
+	path('api-auth/', include("rest_framewor.urls")),
 	path('api/token/', obtain_jwt_token, name='obtain-token'),
 	path('api/token/verify/', verify_jwt_token, name='verify-token'),
 	path('api/token/refresh/', refresh_jwt_token, name='refresh-token'),
 	
 
 ]
-
-
 
 

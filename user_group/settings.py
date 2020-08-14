@@ -85,6 +85,22 @@ DATABASES = {
 	}
 }
 
+"""
+I Forget to Change sqlite to PostgreSQL
+Here configuration required to implement in PostgreSQL database
+"""
+DATABASES_POSTGRES = {
+	'default' : {
+		'ENGINE': ' django.db.backends.PostgreSQL',
+		'NAME': 'flutterdb', # Name of DataBase
+		'USER': 'gunarevuri', # Name of Database owner
+		'HOST': 'localhost' # ip address
+		'PASSWORD': 'asdjlk234', # password to login to postgres user
+		'PORT': 5432, # default postgres port
+
+	}
+}
+
 AUTH_USER_MODEL = 'app.User'
 
 CRISPY_TEMPLATE_PACK='bootstrap4'
