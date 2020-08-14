@@ -13,10 +13,9 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.models import Group, Permission, GroupManager,Group
 from .validators import UnicodeUsernameValidator
-# class Classify_group(models.Model):
-# 	user = models.OneToOneField(User, on_delete=models.CASCADE)
-# 	is_teacher = models.BooleanField(null=True, blank=True)
-# 	is_student = models.BooleanField(null=True, blank=True)
+
+
+
 def update_last_login(sender, user, **kwargs):
 	"""
 	A signal receiver which updates the last_login date for
@@ -174,9 +173,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 		"""Send an email to this user."""
 		send_mail(subject, message, from_email, [self.email], **kwargs)
 
-# class Students(models.Model):
-# 	username = models.CharField(max_length = 255, unique=True)
-# 	standard = models.IntegerField(choices=[(x,x) for x in])
+class Student(models.Model):
+	" Student Model creation"
+	user = models.OneToOneField(User, on_delete = models.CASCADE)
+	standard = models.IntegerField(choices=[(x,x) for x in])
+	address = models.CharField(max_length=500)
+	favourite_subject = models.CharField(max_length=100)
+
+
+class Teacher(models.Model):
+	" Teacher Model Creation "
+	user = models.OneToOneField(User, on_delete = models.CASCADE)
+	address = models.CharField(max_length= 255)
+	favourite_subject = models.CharField(max_length=255)
+
+
+
 
 
 

@@ -13,6 +13,14 @@ from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, allowed_users, admin_only_decoratory
 
 
+from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.response import Response
+
+from .models import User, Student,Teacher
+from .serializers import StudentSerializer, TeacherSerializer, UserSerializer
+
+
 def registration_view(request):
 	context = {}
 	form = RegistrationForm()
@@ -39,18 +47,173 @@ def registration_view(request):
 		context['form'] = form
 		return render(request, 'app/register.html', context)
 
+@login_required
+@api_view(["GET"])
+def Student_Get_List(request):
+	"""
+	List all students view
+	"""
+	if request.method == "GET":
+		students = Student.objects.all()
+		serializer = StudentSerializer(students, many=True)
+		return Response(serializer.data)
+		# return render(request, 'app/students.html')
+
+@login_required
+@api_view(["GET"])
+def Student_Get_detail(request):
+	try:
+		student_obj = Student.objects.get(pk = pk)
+	except Student.DoesNotExist:
+		return Response(status= status.HTTP_404_NOT_FOUND)
+
+
+	if request.method == "GET":
+		serializer = StudentSerializer(student_obj)
+		return Response(serializer.data)
+
+
+@login_required
+@api_view(["GET"])
+def Teacher_Get_detail(request, pk):
+	try:
+		teacher_obj = Teacher.objects.get(pk = pk)
+	except Student.DoesNotExist:
+		return Response(status= status.HTTP_404_NOT_FOUND)
+
+
+	if request.method == "GET":
+		serializer = TeacherSerializer(student_obj)
+		return Response(serializer.data)
+
+
+@login_required
+@api_view(["GET"])
+def Teacher_Get_List(request):
+	"""
+	List all Teachers view
+	"""
+	if request.method == "GET":
+		teachers = Teacher.objects.all()
+		serializer = TeacherSerializer(teachers, many=True)
+		return Response(serializer.data)
+		# return render(request, 'app/students.html')
+
+
 
 @login_required
 @allowed_users( allowed_roles = ['admin', 'teachers','students'])
-def get_students(request):
-	return render(request, 'app/students.html')
+@api_view(["GET", "POST"])
+def Student_Get_Post_list(request):
+	"""
+	List all student or create a student
+	"""
+	if request.method == "GET":
+		students = Student.objects.all()
+		serializer = StudentSerializer(students, many=True)
+		return Response(serializer.data)
+		# return render(request, 'app/students.html')
+
+	elif request.method == "POST":
+		serializer = StudentSerializer(data = request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@login_required
+@allowed_users( allowed_roles = ['admin', 'teachers'])
+@api_view(["GET", "POST"])
+def Teacher_Get_Post_list(request):
+	"""
+	List all Teachers or create a Teacher
+	"""
+	if request.method == "GET":
+		teachers = Teacher.objects.all()
+		serializer = TeacherSerializer(teachers, many=True)
+		return Response(serializer.data)
+		# return render(request, 'app/teachers.html')
+
+	elif request.method == "POST":
+		serializer = TeacherSerializer(data = request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+		else:
+			return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@login_required
+@allowed_users(allowed_roles=["admin", "teachers"])
+@api_view(["GET", "PUT", "DELETE"])
+def Student_detail(request,pk):
+	"""
+	Update , Retrieve , Delete a specific Student object
+	"""
+	try:
+		student_obj = Student.objects.get(pk = pk)
+	except Student.DoesNotExist:
+		return Response(status= status.HTTP_404_NOT_FOUND)
+
+
+	if request.method == "GET":
+		serializer = StudentSerializer(student_obj)
+		return Response(serializer.data)
+
+	elif request.method == "PUT":
+		serializer = StudentSerializer(student_obj, data = request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+	elif request.method == "DELETE":
+		student_obj.delete()
+		return Response(status=status.HTTP_204_NO_CONTENT)
+
+@login_required
+@allowed_users(allowed_roles=["admin"])
+@api_view(["GET", "PUT", "DELETE"])
+def Teacher_detail(request,pk):
+	"""
+	Update , Retrieve , Delete a specific Teacher object
+	"""
+	try:
+		teacher_obj = Teacher.objects.get(pk = pk)
+	except Teacher.DoesNotExist:
+		return Response(status= status.HTTP_404_NOT_FOUND)
+
+
+	if request.method == "GET":
+		serializer = TeacherSerializer(teacher_obj)
+		return Response(serializer.data)
+
+	elif request.method == "PUT":
+		serializer = TeacherSerializer(teacher_obj, data = request.data)
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data)
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+	elif request.method == "DELETE":
+		teacher_obj.delete()
+		return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+
+@login_required
+@allowed_users( allowed_roles  = ["admin", "teachers"])
 
 
 @login_required
 @allowed_users(allowed_roles =["teachers", "admin"])
 def Create_Student(request):
-	pass
-	
+
+
 
 
 
