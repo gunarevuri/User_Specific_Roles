@@ -18,6 +18,12 @@ def unauthenticated_user(view_func):
 	return wrapper_func
 
 def allowed_users(allowed_roles = []):
+	"""
+	input: takes allowed roles list
+			 Check whether current user have permission to endpoint
+	output:
+			view requested if success else unauthorized	
+	"""
 	def decorator(view_func):
 		def wrapper_function(request, *args, **kwargs):
 

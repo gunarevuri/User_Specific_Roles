@@ -1,18 +1,3 @@
-"""user_group URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-	https://docs.djangoproject.com/en/3.1/topics/http/urls/
-Examples:
-Function views
-	1. Add an import:  from my_app import views
-	2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-	1. Add an import:  from other_app.views import Home
-	2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-	1. Import the include() function: from django.urls import include, path
-	2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path
 
@@ -23,6 +8,20 @@ from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token, refresh
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('', views.home, name='home'),
+	path('get-all-students/', views.Student_Get_List, name='get-all-students'),
+	path('get-student/<int:id>/', views.Student_Get_detail, name='get-student-specific'),
+	path('update-student/<int:id>/', views.Student_detail, name='update-student'),
+	path('delete-student/<int:id>/', views.Student_detail, name='delete-student'),
+
+
+	path('get-all-teachers/', views.Teacher_Get_List, name='get-all-teachers'),
+	path('get-teacher/<int:id>/', views.Teacher_Get_detail, name='get-teacher'),
+	path('update-teacher/<int:id>/', views.Teacher_detail, name='update-teacher'),
+	path('delete-teacher/<int:id>/', views.Teacher_detail, name='delete-teacher'),	
+
+	path('add-student/', views.Student_Get_Post_list, name='add-student'),
+	path('add-teacher', views.Teacher_Get_Post_list, name='add-teacher'),
+
 	path('students/', views.Student_Get_List, name='students'),
 	path('teachers/', views.Teacher_Get_detail, name='teachers'),
 
@@ -54,9 +53,9 @@ urlpatterns = [
 
 
 	# JWT urls implementation
-	path('api/token/', obtain_jwt_token),
-	path('api/token/verify/', verify_jwt_token),
-	path('api/token/refresh/', refresh_jwt_token),
+	path('api/token/', obtain_jwt_token, name='obtain-token'),
+	path('api/token/verify/', verify_jwt_token, name='verify-token'),
+	path('api/token/refresh/', refresh_jwt_token, name='refresh-token'),
 	
 
 ]

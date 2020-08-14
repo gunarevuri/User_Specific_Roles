@@ -129,10 +129,14 @@ USE_TZ = True
 
 
 
-
+"""
+Below required to send email to user,
+If you are using gmail make sure to on allow less secure apps option in your account.
+If you have 2 Factor authentication make app password
+"""
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_PASSWORD = 'evergreen37@'
-EMAIL_HOST_USER = 'revuriguna@gmail.com'
+EMAIL_HOST_PASSWORD = ''#your Email Password
+EMAIL_HOST_USER = '' #your Email name 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True

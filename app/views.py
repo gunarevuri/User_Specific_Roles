@@ -22,8 +22,11 @@ from .models import User, Student,Teacher
 from .serializers import StudentSerializer, TeacherSerializer, UserSerializer
 
 
+# if you are already login you wont get access to this view
+@unauthenticated_user
 def registration_view(request):
 	"""
+	Before this make sure you have created superuser and added groups required.
 	Registration view to every user.
 	"""
 	context = {}
@@ -35,17 +38,24 @@ def registration_view(request):
 			user = form.save()
 			username = form.cleaned_data.get('username')
 			email = form.cleaned_data.get('email')
+
+			# if is_student is true in the form then assign user to student group
+
 			if form.cleaned_data.get('is_student'):
 				group = Group.objects.filter(name="students")
 				user.groups.add(group)
+
 				print("added to students Group")
+
+			# if is_teacher is true in the form then assign user to Teacher group
 
 			if form.cleaned_data['is_teacher']:
 				group = Group.objects.filter(name = "teachers")
 				user.groups.add(group)
+
 				print("added to teachers Group")
 
-			messages.success(request, f"Account was created for {user}")
+			messages.success(request, f"Account was created for the {user}")
 			return redirect('login')
 	else:
 		context['form'] = form
@@ -82,11 +92,12 @@ def home(request):
 @api_view(["GET"])
 def Get_Users(request):
 	"""
-	list all users in the databse
+	list all users in the databse only admin can see this
 	"""
 	users = User.objects.all()
 	serializer = UserSerializer(users, many=True)
 	return Response(serializer.data)
+	# return render(request, 'app/home.html', {"data":"Json Data"})
 
 
 @login_required
@@ -103,7 +114,10 @@ def Student_Get_List(request):
 
 @login_required
 @api_view(["GET"])
-def Student_Get_detail(request):
+def Student_Get_detail(request, pk):
+	"""
+	Display specific student
+	"""
 	try:
 		student_obj = Student.objects.get(pk = pk)
 	except Student.DoesNotExist:
@@ -144,7 +158,7 @@ def Teacher_Get_List(request):
 
 
 @login_required
-@allowed_users( allowed_roles = ['admin', 'teachers','students'])
+@allowed_users( allowed_roles = ['admin', 'teachers'])
 @api_view(["GET", "POST"])
 def Student_Get_Post_list(request):
 	"""
@@ -167,7 +181,7 @@ def Student_Get_Post_list(request):
 
 
 @login_required
-@allowed_users( allowed_roles = ['admin', 'teachers'])
+@admin_only_decoratory
 @api_view(["GET", "POST"])
 def Teacher_Get_Post_list(request):
 	"""
@@ -212,10 +226,12 @@ def Student_detail(request,pk):
 			serializer.save()
 			return Response(serializer.data)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		# return redirect('get-student-specific')
 
 	elif request.method == "DELETE":
 		student_obj.delete()
 		return Response(status=status.HTTP_204_NO_CONTENT)
+		# return redirect('get-students')
 
 @login_required
 @admin_only_decoratory
@@ -240,17 +256,31 @@ def Teacher_detail(request,pk):
 			serializer.save()
 			return Response(serializer.data)
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+		# return redirect('update-student-specific')
 
 	elif request.method == "DELETE":
 		teacher_obj.delete()
 		return Response(status=status.HTTP_204_NO_CONTENT)
+		# return redirect('get-all-teachers')
 
 
+def get_user_token(request):
+	"""
+	Custom Function to get user token
+	"""
 
+	jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+	jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
-@login_required
-@allowed_users(allowed_roles = ["admin","teachers"])
-def get_teachers(request):
-		return render(request, 'app/teachers.html')
+	payload = jwt_payload_handler(user = request.user)
+	token = jwt_encode_handler(payload)
+	return Response({"token": token,
+		 			"success":True,
+		 			})
+
+# @login_required
+# @allowed_users(allowed_roles = ["admin","teachers"])
+# def get_teachers(request):
+# 		return render(request, 'app/teachers.html')
 
 
