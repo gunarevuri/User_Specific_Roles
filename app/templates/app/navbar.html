@@ -1,0 +1,20 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+	<a class="navbar-brand" href="#">APP</a>
+	<div >
+		<div class="form-inline ">
+		<div class="navbar-nav">
+			<a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+			<div class="container">
+				<a class="nav-item nav-link" href="{% url 'register' %}">Register</a>
+				{% if user.is_authenticated %}
+				<h3 style="font-size:18px;color:white;">Hello {{request.user}}</h3>
+				<a class="nav-item nav-link" style="color:white;" href="{% url 'logout' %}">Logout</a>      
+
+				{% else %}
+				<a class="nav-item nav-link" href="{% url 'login' %}">Login</a>
+			{% endif%}
+		</div>
+		</div>
+	</div>
+	</div>
+</nav>
