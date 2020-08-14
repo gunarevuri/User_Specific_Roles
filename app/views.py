@@ -23,6 +23,9 @@ from .serializers import StudentSerializer, TeacherSerializer, UserSerializer
 
 
 def registration_view(request):
+	"""
+	Registration view to every user.
+	"""
 	context = {}
 	form = RegistrationForm()
 
