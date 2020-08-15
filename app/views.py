@@ -12,7 +12,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from .decorators import unauthenticated_user, allowed_users, admin_only_decoratory
 
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
@@ -22,6 +23,9 @@ from .models import User, Student,Teacher
 from .serializers import StudentSerializer, TeacherSerializer, UserSerializer
 
 from rest_framework_jwt.utils import jwt_get_user_id_from_payload_handler
+from rest_framework_jwt.utils import jwt_payload_handler
+import jwt
+from django.conf import Settings
 
 # if you are already login you wont get access to this view
 @unauthenticated_user
@@ -64,6 +68,7 @@ def registration_view(request):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @api_view(["GET"])
 def home(request):
 
@@ -89,6 +94,7 @@ def home(request):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @admin_only_decoratory
 @api_view(["GET"])
 def Get_Users(request):
@@ -102,6 +108,7 @@ def Get_Users(request):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @api_view(["GET"])
 def Student_Get_List(request):
 	"""
@@ -114,6 +121,7 @@ def Student_Get_List(request):
 		# return render(request, 'app/students.html')
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @api_view(["GET"])
 def Student_Get_detail(request, pk):
 	"""
@@ -131,6 +139,7 @@ def Student_Get_detail(request, pk):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @api_view(["GET"])
 def Teacher_Get_detail(request, pk):
 	try:
@@ -145,6 +154,7 @@ def Teacher_Get_detail(request, pk):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @api_view(["GET"])
 def Teacher_Get_List(request):
 	"""
@@ -159,6 +169,7 @@ def Teacher_Get_List(request):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @allowed_users( allowed_roles = ['admin', 'teachers'])
 @api_view(["GET", "POST"])
 def Student_Get_Post_list(request):
@@ -182,6 +193,7 @@ def Student_Get_Post_list(request):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @admin_only_decoratory
 @api_view(["GET", "POST"])
 def Teacher_Get_Post_list(request):
@@ -205,6 +217,7 @@ def Teacher_Get_Post_list(request):
 
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @allowed_users(allowed_roles=["admin", "teachers"])
 @api_view(["GET", "PUT", "DELETE"])
 def Student_detail(request,pk):
@@ -235,6 +248,7 @@ def Student_detail(request,pk):
 		# return redirect('get-students')
 
 @login_required
+@permission_classes([IsAuthenticated,])
 @admin_only_decoratory
 @api_view(["GET", "PUT", "DELETE"])
 def Teacher_detail(request,pk):
@@ -265,38 +279,65 @@ def Teacher_detail(request,pk):
 		# return redirect('get-all-teachers')
 
 
+# If you want to create your own token token with username and any other fieds
+@api_view(["POST"])
+@permission_classes([AllowAny, ])
+def authenticate_user(request):
+	try:
+		username = request.data['username']
+		password = request.data['password']
+
+		user = User.objects.get(username = username, password = password)
+		if user:
+			try:
+				payload = jwt_payload_handler(user)
+				token = jwt.encode(payload, Settings.SECRET_KEY)
+				user_details = {}
+				user_details['name'] = "%s %s"%(user.first_name, user.last_name)
+				user_details['token'] = token
+				user_logged_in.send(sender=user.__class__,
+									request=request, user=user)
+				return Response(user_details, status=status.HTTP_201_CREATED)
+			except Exception as e:
+				raise e
+		else:
+			return Response({"error": "can not authenticate with given credenctials"}, status=status.HTTP_403_FORBIDDEN)
+	except Exception as e:
+		res = {'error': 'please provide a email and a password'}
+		return Response(res)
+
 def get_user_token(request):
 	"""
 	Custom Function to get user token
 	"""
 
-	jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-	jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+	jwt_payload_handler = Settings.JWT_PAYLOAD_HANDLER
+	jwt_encode_handler = Settings.JWT_ENCODE_HANDLER
 
 	payload = jwt_payload_handler(user = request.user)
 	token = jwt_encode_handler(payload)
 	return Response({"token": token,
-		 			"success":True,
-		 			})
+					"success":True,
+					})
 
 def get_user_id_from_payload(request):
 	return jwt_get_user_id_from_payload_handler(request.user)
 
 # if you want to decode the token and verify any custom claims
 def jwt_decode(token):
-    options = {
-        'verify_exp': api_settings.JWT_VERIFY_EXPIRATION,
-    }
-    # get user from token, BEFORE verification, to get user secret key
-    unverified_payload = jwt.decode(token, None, False)
-    secret_key = jwt_get_secret_key(unverified_payload)
-    return jwt.decode(
-        token,
-        api_settings.JWT_PUBLIC_KEY or secret_key,
-        api_settings.JWT_VERIFY,
-        issuer=api_settings.JWT_ISSUER,
-        algorithms=[api_settings.JWT_ALGORITHM]
-    )
+	options = {
+		'verify_exp': Settings.JWT_VERIFY_EXPIRATION,
+	}
+	# get user from token, BEFORE verification, to get user secret key
+	unverified_payload = jwt.decode(token, None, False)
+	secret_key = jwt_get_secret_key(unverified_payload)
+	return jwt.decode(
+		token,
+		Settings.JWT_PUBLIC_KEY or secret_key,
+		Settings.JWT_VERIFY,
+		issuer=Settings.JWT_ISSUER,
+		algorithms=[Settings.JWT_ALGORITHM]
+	)
 
 # @login_required
 # @allowed_users(allowed_roles = ["admin","teachers"])
