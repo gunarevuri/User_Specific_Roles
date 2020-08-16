@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
-from .forms import RegistrationForm
+from .forms import RegistrationForm, StudentSignUpForm, TeacherSignUpForm
 
 from django.contrib.auth.models import Group
 
@@ -26,6 +26,55 @@ from rest_framework_jwt.utils import jwt_get_user_id_from_payload_handler
 from rest_framework_jwt.utils import jwt_payload_handler
 import jwt
 from django.conf import Settings
+
+def Select_User_type_view(request):
+	return render(request, 'app/select_user.html')
+#If you prefer to use separate forms for student and teacher 
+@unauthenticated_user
+def StudentRegestration_view(request):
+	"""
+	Before this make sure you have created superuser and added groups required.
+	Registration view to every user.
+	"""
+	form = StudentSignUpForm()
+	if request.method == "POST":
+		fm = StudentSignUpForm(request.POST)
+		if fm.is_valid():
+			user = fm.save()
+			group = Group.objects.get(name = "students")
+			user.groups.add(group)
+			print(f"{user.username} is successfully added to student group")
+
+			return redirect('login')
+
+	else:
+		context ={}
+		context["form"] = form
+		return render(request, 'app/student_register.html', context)
+
+
+@unauthenticated_user
+def TeacherRegestration_view(request):
+	"""
+	Before this make sure you have created superuser and added groups required.
+	Registration view to every user.
+	"""
+	form = TeacherSignUpForm()
+	if request.method == "POST":
+		fm = TeacherSignUpForm(request.POST)
+		if fm.is_valid():
+			user = fm.save()
+			group = Group.objects.get(name = "teachers")
+			user.groups.add(group)
+			print(f"{user.username} is successfully added to teachers group")
+
+			return redirect('login')
+
+	else:
+		context ={}
+		context["form"] = form
+		return render(request, 'app/teacher_register.html', context)
+		
 
 # if you are already login you wont get access to this view
 @unauthenticated_user

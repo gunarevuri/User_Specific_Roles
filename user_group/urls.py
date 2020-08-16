@@ -8,6 +8,11 @@ from rest_framework_jwt.views import obtain_jwt_token, verify_jwt_token, refresh
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('', views.home, name='home'),
+
+	path('select-user/', views.Select_User_type_view, name='select-user'),
+	path('studet-register/', views.StudentRegestration_view, name='student-register'),
+	path('teacher-register/', views.TeacherRegestration_view, name='teacher-register'),
+	
 	path('get-all-students/', views.Student_Get_List, name='get-all-students'),
 	path('get-student/<int:id>/', views.Student_Get_detail, name='get-student-specific'),
 	path('update-student/<int:id>/', views.Student_detail, name='update-student'),
